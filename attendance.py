@@ -25,6 +25,8 @@ if 'students_db' not in st.session_state:
         st.session_state.students_db = pd.DataFrame(columns=['Full Name', 'ID', 'Photo Paths', 'Section', 'Academic Year', 'Semester'])
 
 # Function to collect student data
+
+# Function to collect student data
 def collect_student_data():
     st.title("Student Data Collection")
 
@@ -35,34 +37,9 @@ def collect_student_data():
         section = st.text_input("Section")
         ac_year = st.text_input("Academic Year")
         semester = st.text_input("Semester")
-
-        # Camera feed placeholder
-        camera_placeholder = st.empty()
-
-        capture_button = st.form_submit_button(label="Capture Photo")
+        photos = st.file_uploader("Upload Photos", accept_multiple_files=True)
 
         submit_button = st.form_submit_button(label="Submit")
-
-    # Initialize the camera and display the feed
-    cap = cv2.VideoCapture(0)
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            st.error("Failed to access the camera.")
-            break
-
-        # Display the camera feed
-        camera_placeholder.image(frame, channels="BGR")
-
-        if capture_button:
-            # Save the captured photo
-            photo_path = os.path.join(PHOTO_DIR, f"{student_id}_photo.jpg")
-            cv2.imwrite(photo_path, frame)
-            st.success(f"Photo captured and saved as {photo_path}.")
-            break
-
-    cap.release()
 
     # Validate input fields and provide feedback
     if submit_button:
@@ -76,9 +53,24 @@ def collect_student_data():
             st.error("Academic Year is required.")
         elif not semester:
             st.error("Semester is required.")
+        elif not photos:
+            st.error("At least one photo must be uploaded.")
         else:
+            # Process the data and save photos
+            photo_paths = []
+            for photo in photos:
+                try:
+                    # Save the uploaded photo to the local directory
+                    photo_path = os.path.join(PHOTO_DIR, f"{student_id}_{photo.name}")
+                    with open(photo_path, 'wb') as f:
+                        f.write(photo.read())
+                    photo_paths.append(photo_path)
+                except Exception as e:
+                    st.error(f"Failed to save photo {photo.name}: {e}")
+                    continue
+
             # Add student data to the session state DataFrame
-            st.session_state.students_db.loc[len(st.session_state.students_db)] = [full_name, student_id, [photo_path], section, ac_year, semester]
+            st.session_state.students_db.loc[len(st.session_state.students_db)] = [full_name, student_id, photo_paths, section, ac_year, semester]
 
             # Store the student data in the JSON file
             student_data = st.session_state.students_db.to_dict(orient='records')
@@ -87,7 +79,6 @@ def collect_student_data():
 
             st.success("Student data collected successfully!")
             st.balloons()  # Optional: Adds a visual effect
-
 # Function to perform face recognition and return face coordinates
 def recognize_face(live_frame, stored_photo_path):
     stored_image = cv2.imread(stored_photo_path)
