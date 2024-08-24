@@ -1,6 +1,6 @@
 Here's a simple README for your Streamlit app, written in Markdown with emojis and interactive elements:
 
-````markdown
+
 # 📚 SMIE Attendance Management System
 
 Welcome to the **SMIE Attendance Management System**! This Streamlit app allows you to manage and analyze student attendance data easily and interactively.
@@ -17,10 +17,10 @@ To get started, make sure you have Python installed on your machine, then follow
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/attendance-management.git
-   cd attendance-management
+   git clone https://github.com/gashu-101/Attendance-SMIE.git
+   cd Attendance-SMIE
    ```
-````
+
 
 2. **Install the required packages**:
 
@@ -70,13 +70,6 @@ Feel free to contribute to this project! Fork the repository and submit a pull r
    ```
 5. **Open a Pull Request**.
 
-## 📧 Contact
-
-For any questions or support, please reach out to [your.email@example.com](mailto:your.email@example.com).
-
----
-
-**Happy Coding!** 🎉
 
 ```
 
