@@ -125,10 +125,17 @@ def take_attendance():
         st.warning("No students found for the selected section.")
         return
 
+    # Inform the user about camera access
+    st.info("Please allow camera access when prompted by your browser. Ensure no other application is using the camera.")
+
+    # Try to initialize the camera
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        st.error("Failed to access the camera. Please check if the camera is connected and not being used by another application.")
+        return
+
     st.text("Show the student's face to the camera")
     frame_placeholder = st.empty()
-
-    cap = cv2.VideoCapture(0)
 
     attendance_recorded = set()  # Keep track of students for whom attendance has been recorded
     done = False  # Control variable for manual stopping
@@ -141,7 +148,7 @@ def take_attendance():
     while True:
         ret, frame = cap.read()
         if not ret:
-            st.error("Failed to capture video")
+            st.error("Failed to capture video.")
             break
 
         # Loop through each student in the filtered list and try to recognize
@@ -192,7 +199,6 @@ def take_attendance():
     attendance_data.extend(attendance_summary)
     with open(ATTENDANCE_JSON_FILE, 'w') as f:
         json.dump(attendance_data, f, indent=4)
-
 # Function to analyze attendance
 def analyze_attendance():
     st.title("Analyze Attendance")
