@@ -25,8 +25,6 @@ if 'students_db' not in st.session_state:
         st.session_state.students_db = pd.DataFrame(columns=['Full Name', 'ID', 'Photo Paths', 'Section', 'Academic Year', 'Semester'])
 
 # Function to collect student data
-
-# Function to collect student data
 def collect_student_data():
     st.title("Student Data Collection")
 
@@ -37,9 +35,38 @@ def collect_student_data():
         section = st.text_input("Section")
         ac_year = st.text_input("Academic Year")
         semester = st.text_input("Semester")
-        photos = st.file_uploader("Upload Photos", accept_multiple_files=True)
 
+        # Camera feed placeholder
+        camera_placeholder = st.empty()
+
+        capture_button = st.form_submit_button(label="Capture Photo")
         submit_button = st.form_submit_button(label="Submit")
+
+    # Initialize the camera and display the feed
+    cap = cv2.VideoCapture(0)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            st.error("Failed to access the camera.")
+            break
+
+        # Display the camera feed
+        camera_placeholder.image(frame, channels="BGR")
+
+        if capture_button:
+            # Construct the full path to the directory where the photo will be saved
+            student_photo_dir = os.path.join(PHOTO_DIR, student_id)
+            os.makedirs(student_photo_dir, exist_ok=True)
+
+            # Now save the captured photo
+            photo_filename = f"{student_id}_photo.jpg"
+            photo_path = os.path.join(student_photo_dir, photo_filename)
+            cv2.imwrite(photo_path, frame)
+            st.success(f"Photo captured and saved as {photo_path}.")
+            break
+
+    cap.release()
 
     # Validate input fields and provide feedback
     if submit_button:
@@ -53,24 +80,9 @@ def collect_student_data():
             st.error("Academic Year is required.")
         elif not semester:
             st.error("Semester is required.")
-        elif not photos:
-            st.error("At least one photo must be uploaded.")
         else:
-            # Process the data and save photos
-            photo_paths = []
-            for photo in photos:
-                try:
-                    # Save the uploaded photo to the local directory
-                    photo_path = os.path.join(PHOTO_DIR, f"{student_id}_{photo.name}")
-                    with open(photo_path, 'wb') as f:
-                        f.write(photo.read())
-                    photo_paths.append(photo_path)
-                except Exception as e:
-                    st.error(f"Failed to save photo {photo.name}: {e}")
-                    continue
-
             # Add student data to the session state DataFrame
-            st.session_state.students_db.loc[len(st.session_state.students_db)] = [full_name, student_id, photo_paths, section, ac_year, semester]
+            st.session_state.students_db.loc[len(st.session_state.students_db)] = [full_name, student_id, [photo_path], section, ac_year, semester]
 
             # Store the student data in the JSON file
             student_data = st.session_state.students_db.to_dict(orient='records')
@@ -79,6 +91,7 @@ def collect_student_data():
 
             st.success("Student data collected successfully!")
             st.balloons()  # Optional: Adds a visual effect
+
 # Function to perform face recognition and return face coordinates
 def recognize_face(live_frame, stored_photo_path):
     stored_image = cv2.imread(stored_photo_path)
@@ -125,26 +138,10 @@ def take_attendance():
         st.warning("No students found for the selected section.")
         return
 
-    # Inform the user about camera access
-    st.info("Please allow camera access when prompted by your browser. Ensure no other application is using the camera.")
-
-    # Retry mechanism for camera access
-    max_retries = 3
-    cap = None
-    for attempt in range(max_retries):
-        cap = cv2.VideoCapture(0)
-        if cap.isOpened():
-            break
-        else:
-            st.warning(f"Failed to access the camera (Attempt {attempt + 1} of {max_retries}). Retrying...")
-            cap.release()
-
-    if not cap or not cap.isOpened():
-        st.error("Failed to access the camera after several attempts. Please check if the camera is connected and not being used by another application.")
-        return
-
     st.text("Show the student's face to the camera")
     frame_placeholder = st.empty()
+
+    cap = cv2.VideoCapture(0)
 
     attendance_recorded = set()  # Keep track of students for whom attendance has been recorded
     done = False  # Control variable for manual stopping
@@ -157,7 +154,7 @@ def take_attendance():
     while True:
         ret, frame = cap.read()
         if not ret:
-            st.error("Failed to capture video.")
+            st.error("Failed to capture video")
             break
 
         # Loop through each student in the filtered list and try to recognize
@@ -208,6 +205,8 @@ def take_attendance():
     attendance_data.extend(attendance_summary)
     with open(ATTENDANCE_JSON_FILE, 'w') as f:
         json.dump(attendance_data, f, indent=4)
+
+# Function to analyze attendance
 def analyze_attendance():
     st.title("Analyze Attendance")
     
