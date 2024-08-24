@@ -1,0 +1,20 @@
+[
+    {
+        "Full Name": "John Doe",
+        "ID": "JD001",
+        "Date": "2024-08-24",
+        "Section": "A"
+    },
+    {
+        "Full Name": "Jane Smith",
+        "ID": "JS002",
+        "Date": "2024-08-24",
+        "Section": "A"
+    },
+    {
+        "Full Name": "Alice Johnson",
+        "ID": "AJ003",
+        "Date": "2024-08-24",
+        "Section": "B"
+    }
+]

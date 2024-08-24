@@ -1,0 +1,52 @@
+[
+    {
+        "Full Name": "Gashahun Woldeyohannes",
+        "ID": "1",
+        "Photo Paths": [
+            "students_data\\photos\\1_WIN_20240815_12_17_37_Pro.jpg"
+        ],
+        "Section": "3",
+        "Academic Year": "2024",
+        "Semester": "2"
+    },
+    {
+        "Full Name": "Enat",
+        "ID": "2",
+        "Photo Paths": [
+            "students_data\\photos\\2_WIN_20240815_12_45_11_Pro.jpg"
+        ],
+        "Section": "3",
+        "Academic Year": "2024",
+        "Semester": "2"
+    },
+    {
+        "Full Name": "Gashahun Woldeyohannes",
+        "ID": "2",
+        "Photo Paths": [
+            "students_data\\photos\\2_WIN_20240815_12_17_48_Pro.jpg"
+        ],
+        "Section": "3",
+        "Academic Year": "2024",
+        "Semester": "2"
+    },
+    {
+        "Full Name": "Enat Woldeyohannes",
+        "ID": "3",
+        "Photo Paths": [
+            "students_data\\photos\\3_WIN_20240815_12_45_11_Pro.jpg"
+        ],
+        "Section": "3",
+        "Academic Year": "2024",
+        "Semester": "2"
+    },
+    {
+        "Full Name": "Enat",
+        "ID": "2",
+        "Photo Paths": [
+            "students_data\\photos\\2_me.JPG"
+        ],
+        "Section": "3",
+        "Academic Year": "2024",
+        "Semester": "2"
+    }
+]
