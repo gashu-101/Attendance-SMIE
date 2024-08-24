@@ -54,12 +54,17 @@ def collect_student_data():
         elif not photos:
             st.error("At least one photo must be uploaded.")
         else:
+            # Create a directory for the student based on their ID
+            student_photo_dir = os.path.join(PHOTO_DIR, student_id)
+            if not os.path.exists(student_photo_dir):
+                os.makedirs(student_photo_dir)
+
             # Process the data and save photos
             photo_paths = []
             for photo in photos:
                 try:
-                    # Save the uploaded photo to the local directory
-                    photo_path = os.path.join(PHOTO_DIR, f"{student_id}_{photo.name}")
+                    # Save the uploaded photo to the student's directory
+                    photo_path = os.path.join(student_photo_dir, photo.name)
                     with open(photo_path, 'wb') as f:
                         f.write(photo.read())
                     photo_paths.append(photo_path)
