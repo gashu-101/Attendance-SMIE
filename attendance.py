@@ -92,7 +92,7 @@ def collect_student_data():
             st.success("Student data collected successfully!")
             st.balloons()  # Optional: Adds a visual effect
 
-# Function to perform face recognition and return face coordinates
+# Function to perform face recognition and return face coordinates and color
 def recognize_face(live_frame, stored_photo_path):
     stored_image = cv2.imread(stored_photo_path)
     gray_live_frame = cv2.cvtColor(live_frame, cv2.COLOR_BGR2GRAY)
@@ -103,7 +103,7 @@ def recognize_face(live_frame, stored_photo_path):
     faces_stored = face_cascade.detectMultiScale(gray_stored_image, 1.1, 4)
 
     if len(faces_live) == 0 or len(faces_stored) == 0:
-        return False, None
+        return False, None, None
 
     (x_live, y_live, w_live, h_live) = faces_live[0]
     live_face = gray_live_frame[y_live:y_live+h_live, x_live:x_live+w_live]
@@ -116,15 +116,14 @@ def recognize_face(live_frame, stored_photo_path):
     label, confidence = face_recognizer.predict(live_face)
 
     if confidence < 40:  # Stricter threshold
-        return True, (x_live, y_live, w_live, h_live)
+        return True, (x_live, y_live, w_live, h_live), (0, 255, 0)  # Green for recognized face
     else:
-        return False, None
+        return False, (x_live, y_live, w_live, h_live), (0, 0, 255)  # Red for unrecognized face
 
 # Function to take attendance
 def take_attendance():
     st.title("Take Attendance")
 
-    # Ask for the date
     attendance_date = st.date_input("Select Attendance Date", date.today())
 
     if st.session_state.students_db.empty:
@@ -143,11 +142,10 @@ def take_attendance():
 
     cap = cv2.VideoCapture(0)
 
-    attendance_recorded = set()  # Keep track of students for whom attendance has been recorded
-    done = False  # Control variable for manual stopping
-    
-    attendance_summary = []  # List to store attendance data
-    
+    attendance_recorded = set()
+    done = False
+    attendance_summary = []
+
     if st.button("Done", key="done_button"):
         done = True
             
@@ -157,34 +155,27 @@ def take_attendance():
             st.error("Failed to capture video")
             break
 
-        # Loop through each student in the filtered list and try to recognize
         for _, student_record in filtered_students.iterrows():
             if student_record['Full Name'] not in attendance_recorded:
                 for photo_path in student_record['Photo Paths']:
-                    recognized, face_coords = recognize_face(frame, photo_path)
+                    recognized, face_coords, rect_color = recognize_face(frame, photo_path)
                     if recognized:
-                        # Draw a rectangle around the face
                         (x, y, w, h) = face_coords
-                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                        # Put the student ID above the rectangle
-                        cv2.putText(frame, student_record['ID'], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), rect_color, 2)
+                        cv2.putText(frame, student_record['ID'], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, rect_color, 2)
                         st.success(f"Attendance recorded for {student_record['Full Name']} on {attendance_date}")
                         attendance_recorded.add(student_record['Full Name'])
-                        
-                        # Store attendance data in summary list
+
                         attendance_summary.append({
                             "Full Name": student_record['Full Name'],
                             "ID": student_record['ID'],
                             "Date": str(attendance_date),
                             "Section": student_record['Section']
                         })
-                        # Break the loop once a face is recognized to avoid multiple recognitions in one loop iteration
                         break
 
-        # Display the live video frame with rectangles and text in the Streamlit app
         frame_placeholder.image(frame, channels="BGR")
 
-        # Exit the loop after recognizing all students in the section
         if len(attendance_recorded) == len(filtered_students):
             st.success("Attendance recorded for all students in this section.")
             break
@@ -195,13 +186,12 @@ def take_attendance():
     if done:
         st.warning("Attendance process manually stopped.")
     
-    # Save the attendance summary to the JSON file
     if os.path.exists(ATTENDANCE_JSON_FILE):
         with open(ATTENDANCE_JSON_FILE, 'r') as f:
             attendance_data = json.load(f)
     else:
         attendance_data = []
-    
+
     attendance_data.extend(attendance_summary)
     with open(ATTENDANCE_JSON_FILE, 'w') as f:
         json.dump(attendance_data, f, indent=4)
