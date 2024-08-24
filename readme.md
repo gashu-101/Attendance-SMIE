@@ -1,5 +1,3 @@
-Here's a simple README for your Streamlit app, written in Markdown with emojis and interactive elements:
-
 
 # 📚 SMIE Attendance Management System
 
