@@ -128,10 +128,19 @@ def take_attendance():
     # Inform the user about camera access
     st.info("Please allow camera access when prompted by your browser. Ensure no other application is using the camera.")
 
-    # Try to initialize the camera
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        st.error("Failed to access the camera. Please check if the camera is connected and not being used by another application.")
+    # Retry mechanism for camera access
+    max_retries = 3
+    cap = None
+    for attempt in range(max_retries):
+        cap = cv2.VideoCapture(0)
+        if cap.isOpened():
+            break
+        else:
+            st.warning(f"Failed to access the camera (Attempt {attempt + 1} of {max_retries}). Retrying...")
+            cap.release()
+
+    if not cap or not cap.isOpened():
+        st.error("Failed to access the camera after several attempts. Please check if the camera is connected and not being used by another application.")
         return
 
     st.text("Show the student's face to the camera")
@@ -199,7 +208,6 @@ def take_attendance():
     attendance_data.extend(attendance_summary)
     with open(ATTENDANCE_JSON_FILE, 'w') as f:
         json.dump(attendance_data, f, indent=4)
-# Function to analyze attendance
 def analyze_attendance():
     st.title("Analyze Attendance")
     
